@@ -1,6 +1,10 @@
 # VIRTUAL-MOUSE-CAMERA
 - virtual mouse controlled by hand gesture 
 
+
+# ARCHITECTURE
+camera -> hand-tracker -> UDP SOCKET (hand landmarks) -> mouse-controller -> manipulate mouse
+
 # setup & run
 - see [hand-tracker](./hand-tracker/README.md) and [mouse-controller](./mouse-controller/README.md)
 
