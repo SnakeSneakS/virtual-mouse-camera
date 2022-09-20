@@ -50,6 +50,8 @@ func (h *handler) handleHandLandmarks(landmarks model.HandLandmark) error {
 
 	if h.isTouched(index_finger_mcp, index_finger_tip, middle_finger_mcp, middle_finger_tip) {
 		h.mouseController.LeftDown(true)
+	} else {
+		h.mouseController.LeftDown(false)
 	}
 	/*else if h.isTouched(middle_finger_mcp, middle_finger_tip, ring_finger_mcp, ring_finger_tip) {
 		h.mouseController.RightDown()

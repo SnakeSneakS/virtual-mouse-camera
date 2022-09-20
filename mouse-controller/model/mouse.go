@@ -38,8 +38,8 @@ type MouseInputEventStore struct {
 	*sync.Mutex
 }
 
-func NewMouseInputEventStore() MouseInputEventStore {
-	return MouseInputEventStore{
+func NewMouseInputEventStore() *MouseInputEventStore {
+	return &MouseInputEventStore{
 		make(map[MouseInputEvent]bool, 0),
 		new(sync.Mutex),
 	}
@@ -56,7 +56,7 @@ func (s MouseInputEventStore) Get(e MouseInputEvent) (bool, error) {
 	defer s.Unlock()
 
 	if v, ok := s.m[e]; ok {
-		delete(s.m, e)
+		//delete(s.m, e)
 		return v, nil
 	}
 	return false, xerrors.New("no value is set")
@@ -68,8 +68,8 @@ type MouseInputEventsStore struct {
 	*sync.Mutex
 }
 
-func NewMouseInputEventsStore() MouseInputEventsStore {
-	return MouseInputEventsStore{
+func NewMouseInputEventsStore() *MouseInputEventsStore {
+	return &MouseInputEventsStore{
 		make(map[MouseInputEvent]([]bool), 0),
 		new(sync.Mutex),
 	}
@@ -114,6 +114,10 @@ func (s MouseInputEventsStore) GetState(e MouseInputEvent, combineSeq, holdSeq i
 		i += combineSeq
 	}
 
+	/*if e == MouseLeftDown {
+		log.Println("mouseLeftDown: ", storeCombined[len(storeCombined)-5:])
+	}*/
+
 	type eventSequenceStateWithCount struct {
 		isDown bool //isDown
 		count  int  //sequence count
@@ -140,6 +144,7 @@ func (s MouseInputEventsStore) GetState(e MouseInputEvent, combineSeq, holdSeq i
 			c = 1
 		}
 	}
+	inputs = append(inputs, eventSequenceStateWithCount{b, c})
 
 	if len(inputs) == 0 {
 		return Stay
@@ -156,6 +161,7 @@ func (s MouseInputEventsStore) GetState(e MouseInputEvent, combineSeq, holdSeq i
 				if first.count >= holdSeq {
 					return HoldEnd
 				} else {
+					//log.Println("click: ", storeCombined[len(storeCombined)-5:])
 					return Click
 				}
 			} else {

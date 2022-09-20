@@ -8,11 +8,11 @@ import (
 	"github.com/snakesneaks/virtual-mouse-camera/mouse-controller/model"
 )
 
-const FPS = 1
+const FPS = 30
 const waitKeyTime = 1000 / FPS
 const historySize = 100
-const holdSequence = 60   //何度eventが続いたら入力とみなすか
-const combineSequence = 1 //チャタリング予防
+const combineSequence = 1                        //チャタリング予防. ただしこれをしたらクリックイベントが複数起きるなど問題ある.
+const holdSequence = FPS / (combineSequence * 3) //何度eventが続いたらholdとみなすか
 
 type MouseWorker interface {
 	Start()
@@ -25,8 +25,8 @@ type MouseWorker interface {
 type mouseWorker struct {
 	isWorking bool
 
-	mouseEventStore  model.MouseInputEventStore  //現在のマウスイベントを保持する
-	mouseEventsStore model.MouseInputEventsStore //過去のマウスイベントを保持する
+	mouseEventStore  *model.MouseInputEventStore  //現在のマウスイベントを保持する
+	mouseEventsStore *model.MouseInputEventsStore //過去のマウスイベントを保持する
 }
 
 func NewMouseWorker() MouseWorker {
@@ -51,8 +51,8 @@ func (w *mouseWorker) Start() {
 	go func() {
 		for w.isWorking {
 			for _, event := range model.MouseEvents {
-				if v, err := w.mouseEventStore.Get(event); err == nil {
-					w.mouseEventsStore.Push(event, v)
+				if b, err := w.mouseEventStore.Get(event); err == nil {
+					w.mouseEventsStore.Push(event, b)
 				} else {
 					w.mouseEventsStore.Push(event, false)
 				}
@@ -64,17 +64,17 @@ func (w *mouseWorker) Start() {
 					robotgo.Click(w.mouseInputEvent2mouseInputKey(event))
 				case model.HoldEnd:
 					log.Println("state: holdEnd")
-					robotgo.Toggle(w.mouseInputEvent2mouseInputKey(event), "down")
+					robotgo.Toggle(w.mouseInputEvent2mouseInputKey(event), "up")
 				case model.HoldDown:
 					log.Println("state: holdDown")
-					robotgo.Toggle(w.mouseInputEvent2mouseInputKey(event), "up")
+					robotgo.Toggle(w.mouseInputEvent2mouseInputKey(event), "down")
 				case model.Stay:
 					//do nothing
 				case model.Unknown:
 					log.Println("unknown state: ", eventState)
 				}
 			}
-			time.Sleep(waitKeyTime)
+			time.Sleep(time.Millisecond * waitKeyTime)
 		}
 		log.Println("mouse controller stopped")
 	}()
@@ -88,7 +88,7 @@ func (w *mouseWorker) Stop() {
 }
 
 func (w *mouseWorker) Move(sx, sy int) {
-	robotgo.Move(sx, sy)
+	robotgo.MoveSmooth(sx, sy)
 }
 
 // when down
