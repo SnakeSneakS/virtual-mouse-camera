@@ -1,7 +1,10 @@
 # VIRTUAL-MOUSE-CAMERA
 - virtual mouse controlled by hand gesture 
 
-# run
+# setup & run
+- see [hand-tracker](./hand-tracker/README.md) and [mouse-controller](./mouse-controller/README.md)
+
+# run using makefile
 - `make run-hand-tracker ADDR=localhost PORT=8080 CAMERA_INDEX=1`
 - `make run-mouse-controller ADDR=localhost PORT=8080`
 
